@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"github.com/cosee-gitlab/lock"
 	"github.com/cosee-gitlab/lock/db"
 	"log"
 	"time"
-	"fmt"
-	"context"
 )
 
 //var lockKey = flag.String("key", "", "(optional) locking key")
@@ -44,6 +44,13 @@ func main() {
 
 	if *doLock {
 		err = client.Lock(key, env.JobId, *lockExpiration, context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *doUnlock {
+		err = client.Unlock(key, env.JobId)
 		if err != nil {
 			log.Fatal(err)
 		}

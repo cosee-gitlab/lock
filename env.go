@@ -6,10 +6,10 @@ import (
 )
 
 type Environment struct {
-	ProjectId   int   `envconfig:"CI_PROJECT_ID"`
+	ProjectId   int    `envconfig:"CI_PROJECT_ID"`
 	ProjectName string `envconfig:"CI_PROJECT_NAME"`
-	PipelineId  int   `envconfig:"CI_PIPELINE_ID"`
-	JobId       int   `envconfig:"CI_JOB_ID"`
+	PipelineId  int    `envconfig:"CI_PIPELINE_ID"`
+	JobId       int    `envconfig:"CI_JOB_ID"`
 	JobName     string `envconfig:"CI_JOB_NAME"`
 
 	RedisHost string `envconfig:"LOCKS_REDIS_HOST"`

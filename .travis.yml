@@ -2,6 +2,9 @@ language: go
 
 go: 1.10.x
 
+before_install:
+  - go list ./...
+
 script:
   - go test -v -cover ./...
 

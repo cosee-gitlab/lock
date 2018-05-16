@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
+	"log"
 	"strconv"
 	"time"
-	"log"
 )
 
 const newestJobKey = "_newest_job"
@@ -59,16 +59,45 @@ func (r *r) Lock(key string, jobId int, expiration time.Duration, ctx context.Co
 	}
 }
 
+func (r *r) Unlock(key string, jobId int) error {
+	var lockId int
+	getLockId, err := r.c.Get(key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			lockId = 0
+		}
+	} else {
+		lockId, err = strconv.Atoi(getLockId)
+		if err != nil {
+			return err
+		}
+		if lockId != jobId {
+			return errors.Errorf("Job %v has the lock. Thats not me.", lockId)
+		}
+	}
+
+	delRes, err := r.c.Del(key).Result()
+	if err != nil {
+		return err
+	}
+
+	if delRes != 1 {
+		log.Print("Couldn't remove lock. It isn't there")
+	}
+
+	return nil
+}
+
 func (r *r) tryLock(key string, jobId int, expiration time.Duration) (bool, error) {
 	var newestJob int
 	var lockId int
-	getLockedId, err := r.c.Get(key).Result()
+	getLockId, err := r.c.Get(key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			newestJob = 0
+			lockId = 0
 		}
 	} else {
-		lockId, err = strconv.Atoi(getLockedId)
+		lockId, err = strconv.Atoi(getLockId)
 		if err != nil {
 			return false, err
 		}
