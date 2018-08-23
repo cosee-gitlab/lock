@@ -2,6 +2,7 @@
 
 
 [[projects]]
+  digest = "1:b7a9e5c379358a8016a62df223d60e80387855e00996db5e6131ce032c4dcc16"
   name = "github.com/go-redis/redis"
   packages = [
     ".",
@@ -11,26 +12,35 @@
     "internal/pool",
     "internal/proto",
     "internal/singleflight",
-    "internal/util"
+    "internal/util",
   ]
+  pruneopts = "NUT"
   revision = "83fb42932f6145ce52df09860384a4653d2d332a"
   version = "v6.12.0"
 
 [[projects]]
+  digest = "1:b8870bf2606dca65dc382f4cb8b7a434f17ff36a915451bda12788e9620be368"
   name = "github.com/kelseyhightower/envconfig"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fcd310ea49c5a0cafa9fae062583ae979088212895b50324bd1c9644d7bf7d8d"
+  input-imports = [
+    "github.com/go-redis/redis",
+    "github.com/kelseyhightower/envconfig",
+    "github.com/pkg/errors",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
