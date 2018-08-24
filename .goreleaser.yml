@@ -1,6 +1,6 @@
 builds:
   - main: cmd/lock/main.go
-    binary: lock
+    binary: glock
     goos:
       - linux
     goarch:
