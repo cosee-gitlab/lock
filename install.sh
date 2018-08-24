@@ -2,7 +2,10 @@
 
 LOCK_ARCH=${LOCK_ARCH:-amd64}
 
-RELEASE=${RELEASE:-$(curl --silent https://api.github.com/repos/cosee-gitlab/lock/releases/latest | grep -Po '"tag_name": "v\K.*?(?=")')}
+LATEST_RELEASE=$(curl --silent https://api.github.com/repos/cosee-gitlab/lock/releases/latest \
+        | grep '"tag_name"' \
+        | sed -E 's/.*"v([^"]+)".*/\1/' )   # use sed instead of grep -P, since that might be unavailable
+RELEASE=${RELEASE:-${LATEST_RELEASE}}
 
 echo "Installing gitlab-lock to ~/.local/bin in version ${RELEASE} and LOCK_ARCH=${LOCK_ARCH}"
 
