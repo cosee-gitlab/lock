@@ -1,4 +1,4 @@
-# glock
+# glock [![Build Status](https://travis-ci.com/cosee-gitlab/lock.svg?branch=master)](https://travis-ci.com/cosee-gitlab/lock)
 some jobs in a CI/CD pipeline just aren't designed to run in parallel
 
 ```bash
