@@ -1,8 +1,8 @@
 package db
 
 import (
-	"time"
 	"context"
+	"time"
 )
 
 type Client interface {
