@@ -11,6 +11,7 @@ type Environment struct {
 	PipelineId  int    `envconfig:"CI_PIPELINE_ID"`
 	JobId       int    `envconfig:"CI_JOB_ID"`
 	JobName     string `envconfig:"CI_JOB_NAME"`
+	JobStage    string `envconfig:"CI_JOB_STAGE"`
 
 	RedisHost string `envconfig:"LOCKS_REDIS_HOST"`
 }

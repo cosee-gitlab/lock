@@ -10,10 +10,11 @@ import (
 	"time"
 )
 
-//var lockKey = flag.String("key", "", "(optional) locking key")
+var lockKey = flag.String("key", "", "(optional) locking key")
 var doLock = flag.Bool("lock", false, "should I aquire a lock? Returns 0 if lock is aquired and not 0 if error occured or lock wasn't granted")
 var doUnlock = flag.Bool("unlock", false, "unlock the locked thing")
 var lockExpiration = flag.Duration("expiration", 15*time.Minute, "time after the lock gets removed, even if unlock isn't called")
+var scope = flag.String("scope", "job", "can be job, stage or project")
 
 func main() {
 	flag.Parse()
@@ -40,7 +41,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	key := fmt.Sprintf("%v-%v", env.ProjectId, env.JobName)
+	var key string
+	if len(*lockKey) != 0 {
+		key = *lockKey
+	} else {
+		switch *scope {
+		case "job":
+			key = fmt.Sprintf("%d-%s", env.ProjectId, env.JobName)
+		case "stage":
+			key = fmt.Sprintf("%d-s:%s", env.ProjectId, env.JobStage)
+		case "project":
+			key = fmt.Sprintf("%d", env.ProjectId)
+		default:
+			log.Fatalf("%q isn't a valid scope. Scope can be job, stage or project.", *scope)
+		}
+	}
 
 	if *doLock {
 		err = client.Lock(key, env.JobId, *lockExpiration, context.Background())
