@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 )
@@ -24,6 +24,7 @@ func New(host string) (*r, error) {
 	client := redis.NewClient(options)
 
 	err = client.Ping().Err()
+	log.WithError(err).Debug("Ping()")
 	if err != nil {
 		return nil, err
 	}
@@ -32,6 +33,9 @@ func New(host string) (*r, error) {
 }
 
 func (r *r) Lock(key string, jobId int, expiration time.Duration, ctx context.Context) error {
+	log := log.WithField("key", key)
+	log.Debug("-lock flag was set, so trying to acquire lock")
+
 	locked, err := r.tryLock(key, jobId, expiration)
 	if err != nil {
 		return err
@@ -40,7 +44,7 @@ func (r *r) Lock(key string, jobId int, expiration time.Duration, ctx context.Co
 		return nil
 	}
 
-	log.Printf("somebody else has locked the resource, so trying to get lock for %v", expiration)
+	log.Warnf("somebody else has already locked the resource, so trying to get lock for %v", expiration)
 
 	for {
 		select {
@@ -60,8 +64,12 @@ func (r *r) Lock(key string, jobId int, expiration time.Duration, ctx context.Co
 }
 
 func (r *r) Unlock(key string, jobId int) error {
+	log := log.WithField("key", key)
+	log.Debug("-unlock flag was set, so trying to unlock")
+
 	var lockId int
 	getLockId, err := r.c.Get(key).Result()
+	log.WithField("getLockId", getLockId).WithError(err).Debugf("Get(key:%v)", key)
 	if err != nil {
 		if err == redis.Nil {
 			lockId = 0
@@ -77,21 +85,26 @@ func (r *r) Unlock(key string, jobId int) error {
 	}
 
 	delRes, err := r.c.Del(key).Result()
+	log.WithField("result", delRes).WithError(err).Debugf("Del(key:%v)", key)
 	if err != nil {
 		return err
 	}
 
 	if delRes != 1 {
-		log.Print("Couldn't remove lock. It isn't there")
+		log.Warn("Couldn't remove lock. It isn't there")
 	}
 
 	return nil
 }
 
 func (r *r) tryLock(key string, jobId int, expiration time.Duration) (bool, error) {
+	log := log.WithField("key", key)
+	log.Info("Trying...")
+
 	var newestJob int
 	var lockId int
 	getLockId, err := r.c.Get(key).Result()
+	log.WithField("getLockId", getLockId).WithError(err).Debugf("Get(key:%v)", key)
 	if err != nil {
 		if err == redis.Nil {
 			lockId = 0
@@ -107,6 +120,7 @@ func (r *r) tryLock(key string, jobId int, expiration time.Duration) (bool, erro
 	}
 
 	getNewestJobResult, err := r.c.Get(key + newestJobKey).Result()
+	log.WithField("getNewestJobResult", getNewestJobResult).WithError(err).Debugf("Get(key:%v)", key+newestJobKey)
 	if err != nil {
 		if err == redis.Nil {
 			newestJob = 0
@@ -127,10 +141,12 @@ func (r *r) tryLock(key string, jobId int, expiration time.Duration) (bool, erro
 	if newestJob > jobId {
 		return false, errors.Errorf("Newer Job: %v > Actual Job: %v is also waiting for a lock.", newestJob, jobId)
 	} else if newestJob < jobId {
-		r.c.Set(key+newestJobKey, jobId, 0).Err()
+		err = r.c.Set(key+newestJobKey, jobId, 0).Err()
+		log.WithError(err).Debugf("Set(key:%v, jobId:%v, 0)", key, jobId)
 	}
 
 	set, err := r.c.SetNX(key, jobId, expiration).Result()
+	log.WithError(err).WithField("logAcquired", set).Debugf("SetNX(key:%v, jobId:%v, expiration:%v)", key, jobId, expiration)
 	if err != nil {
 		return false, err
 	}
