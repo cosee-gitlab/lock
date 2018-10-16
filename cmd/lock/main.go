@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/cosee-gitlab/lock"
 	"github.com/cosee-gitlab/lock/db"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -15,9 +15,16 @@ var doLock = flag.Bool("lock", false, "should I aquire a lock? Returns 0 if lock
 var doUnlock = flag.Bool("unlock", false, "unlock the locked thing")
 var lockExpiration = flag.Duration("expiration", 15*time.Minute, "time after the lock gets removed, even if unlock isn't called")
 var scope = flag.String("scope", "job", "can be job, stage or project")
+var verbose = flag.Bool("v", false, "if set use verbose logging")
 
 func main() {
 	flag.Parse()
+
+	if *verbose {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
 
 	env, err := lock.LoadEnvironment()
 	if err != nil {

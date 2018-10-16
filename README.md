@@ -15,5 +15,5 @@ Usage of glock:
         can be job, stage or project (default "job")
   -unlock
         unlock the locked thing
-
+  -v    if set use verbose logging
 ```
