@@ -24,6 +24,7 @@ func New(host string) (*r, error) {
 	client := redis.NewClient(options)
 
 	err = client.Ping().Err()
+	log.WithError(err).Debug("Ping()")
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +69,7 @@ func (r *r) Unlock(key string, jobId int) error {
 
 	var lockId int
 	getLockId, err := r.c.Get(key).Result()
+	log.WithField("getLockId", getLockId).WithError(err).Debugf("Get(key:%v)", key)
 	if err != nil {
 		if err == redis.Nil {
 			lockId = 0
@@ -83,6 +85,7 @@ func (r *r) Unlock(key string, jobId int) error {
 	}
 
 	delRes, err := r.c.Del(key).Result()
+	log.WithField("result", delRes).WithError(err).Debugf("Del(key:%v)", key)
 	if err != nil {
 		return err
 	}
