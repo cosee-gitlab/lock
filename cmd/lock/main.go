@@ -17,8 +17,16 @@ var lockExpiration = flag.Duration("expiration", 15*time.Minute, "time after the
 var scope = flag.String("scope", "job", "can be job, stage or project")
 var verbose = flag.Int("v", 3, "set verbosity level (3: Warning, 4: Info, 5: Debug)")
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	flag.Parse()
+
+	fmt.Printf("cosee-gitlab/lock: %v, commit %v, built at %v", version, commit, date)
 
 	if *verbose < 0 || 5 < *verbose {
 		log.Fatalf("Illegal verbosity level: %v", *verbose)
